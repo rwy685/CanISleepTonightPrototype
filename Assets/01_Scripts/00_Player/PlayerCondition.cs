@@ -33,7 +33,13 @@ public class PlayerCondition : MonoBehaviour
     public void AddStress(float value)
     {
         stress = Mathf.Clamp(stress + value, 0, 100);
-        uiManager.UpdateStressUI(stress, maxValue);
+
+        EventBus.Publish(new StressChangedEvent
+        {
+            Value = stress,
+            Max = maxValue
+        });
+
     }
 
     public void AddFatigue(float value)

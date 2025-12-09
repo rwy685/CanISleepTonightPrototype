@@ -40,6 +40,20 @@ public class UIManager : MonoBehaviour
 
         Instance = this;
     }
+    private void OnEnable()
+    {
+        EventBus.Subscribe<StressChangedEvent>(OnStressChanged);
+    }
+
+    private void OnDisable()
+    {
+        EventBus.Unsubscribe<StressChangedEvent>(OnStressChanged);
+    }
+
+    private void OnStressChanged(StressChangedEvent evt)
+    {
+        UpdateStressUI(evt.Value, evt.Max);
+    }
 
     public void ToggleCursor()
     {
