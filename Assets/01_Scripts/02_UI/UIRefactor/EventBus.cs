@@ -1,35 +1,66 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 public static class EventBus
 {
-    private static Dictionary<Type, List<Delegate>> _subscribers = new();
-    
-    //구독
+    private static readonly Dictionary<Type, IList> _subscribers = new();
+
+    private static List<WeakReference<Action<T>>> GetList<T>()
+    {
+        var type = typeof(T);
+
+        if (!_subscribers.TryGetValue(type, out var list))
+        {
+            list = new List<WeakReference<Action<T>>>();
+            _subscribers[type] = list;
+        }
+
+        return (List<WeakReference<Action<T>>>)list;
+    }
+
     public static void Subscribe<T>(Action<T> callback)
     {
-        var type = typeof(T);
-        if (!_subscribers.ContainsKey(type))
-            _subscribers[type] = new List<Delegate>();
-
-        _subscribers[type].Add(callback);
+        GetList<T>().Add(new WeakReference<Action<T>>(callback));
     }
-    //해지
+
     public static void Unsubscribe<T>(Action<T> callback)
     {
-        var type = typeof(T);
-        if (_subscribers.ContainsKey(type))
-            _subscribers[type].Remove(callback);
+        var list = GetList<T>();
+
+        list.RemoveAll(w =>
+        {
+            if (!w.TryGetTarget(out var target))
+                return true;
+
+            return target == callback;
+        });
     }
-    //발행
+
     public static void Publish<T>(T eventData)
     {
-        var type = typeof(T);
-        if (!_subscribers.ContainsKey(type))
-            return;
+        var list = GetList<T>();
 
-        foreach (var del in _subscribers[type])
-            (del as Action<T>)?.Invoke(eventData);
+        var snapshot = list.ToArray();
+
+        foreach (var weak in snapshot)
+        {
+            if (!weak.TryGetTarget(out var callback))
+            {
+                list.Remove(weak);
+                continue;
+            }
+
+            try
+            {
+                callback.Invoke(eventData);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[EventBus] {typeof(T).Name} 처리 중 예외: {ex}");
+            }
+        }
     }
-
 }
+
