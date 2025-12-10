@@ -8,27 +8,31 @@ public static class EventBus
     //구독자를 타입형태로 리스트로 관리
     private static readonly Dictionary<Type, IList> _subscribers = new();
 
-    //구독자가 실행할 리스트 불러오기
+    //IList에 리스트로 관리할 구독자들을 불러오기
     private static List<WeakReference<Action<T>>> GetList<T>()
     {
         var type = typeof(T);
 
+        // 딕셔너리에 해당 이벤트 타입이 없다면 새 리스트를 생성하여 등록
         if (!_subscribers.TryGetValue(type, out var list))
         {
-            list = new List<WeakReference<Action<T>>>(); // 딕셔너리에 키가 없을 때 새로 생성 후 리스트 반환
+            list = new List<WeakReference<Action<T>>>(); 
             _subscribers[type] = list;
         }
 
-        return (List<WeakReference<Action<T>>>)list; //리스트가 있다면 유지
+        //IList(콜백 저장된 리스트)를 실제 이벤트 형태의 타입으로 캐스팅해서 반환
+        return (List<WeakReference<Action<T>>>)list; 
     }
 
     //구독
+    //(콜백을 약한 참조로 감싸서 해당 이벤트 타입의 구독 리스트에 추가)
     public static void Subscribe<T>(Action<T> callback)
     {
         GetList<T>().Add(new WeakReference<Action<T>>(callback));
     }
 
     //해지
+    //이미 Destroy된 구독자 제거 및 전달된 콜백과 동일한 콜백 찾아 제거
     public static void Unsubscribe<T>(Action<T> callback)
     {
         var list = GetList<T>();
@@ -47,17 +51,18 @@ public static class EventBus
     {
         var list = GetList<T>();
 
-        var snapshot = list.ToArray();
+        var snapshot = list.ToArray(); // 리스트 변경 후 오류방어를 위한 복사본 생성
 
         foreach (var weak in snapshot)
         {
+            // Destroy된 객체 Traget null -> 자동 제거 (신 변경)
             if (!weak.TryGetTarget(out var callback))
             {
                 list.Remove(weak);
                 continue;
             }
 
-            // 예외처리
+            // 예외처리(개별 구독자 오류로 전체 Publish가 중단되지 않도록 보호처리)
             try
             {
                 callback.Invoke(eventData);
