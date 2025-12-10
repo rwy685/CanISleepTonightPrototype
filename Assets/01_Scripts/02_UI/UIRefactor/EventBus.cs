@@ -15,7 +15,7 @@ public static class EventBus
 
         if (!_subscribers.TryGetValue(type, out var list))
         {
-            list = new List<WeakReference<Action<T>>>(); // 리스트가 없다면 새로 생성
+            list = new List<WeakReference<Action<T>>>(); // 딕셔너리에 키가 없을 때 새로 생성 후 리스트 반환
             _subscribers[type] = list;
         }
 
