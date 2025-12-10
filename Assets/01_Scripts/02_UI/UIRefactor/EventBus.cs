@@ -31,4 +31,5 @@ public static class EventBus
         foreach (var del in _subscribers[type])
             (del as Action<T>)?.Invoke(eventData);
     }
+
 }
