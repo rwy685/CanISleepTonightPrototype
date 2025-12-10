@@ -39,22 +39,21 @@ public class UIManager : MonoBehaviour
         }
 
         Instance = this;
-    }
-    private void OnEnable()
-    {
         EventBus.Subscribe<StressChangedEvent>(OnStressChanged);
+        EventBus.Subscribe<FatigueChangedEvent>(OnFatigueChanged);
     }
 
-    private void OnDisable()
-    {
-        EventBus.Unsubscribe<StressChangedEvent>(OnStressChanged);
-    }
-
+    //스트레스 변화
     private void OnStressChanged(StressChangedEvent evt)
     {
         UpdateStressUI(evt.Value, evt.Max);
     }
 
+    //피로도 변화
+    private void OnFatigueChanged(FatigueChangedEvent e)
+    {
+        UpdateFatigueUI(e.Value, e.Max);
+    }
     public void ToggleCursor()
     {
         bool isLocked = Cursor.lockState == CursorLockMode.Locked;

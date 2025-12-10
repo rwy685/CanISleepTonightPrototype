@@ -60,9 +60,9 @@ public class InteractionHandler : MonoBehaviour
                 }
 
                 if (curInteractable != null)
-                    SetPromptText(curInteractable.GetInteractionPrompt());
+                    SetPrompt(curInteractable.GetInteractionPrompt(), true);
                 else
-                    Debug.Log("상호작용 가능 오브젝트 없음!");
+                    SetPrompt("", false);
             }
         }
         else
@@ -71,30 +71,40 @@ public class InteractionHandler : MonoBehaviour
         }
     }
 
-    private void SetPromptText(string text)
+    //private void SetPromptText(string text)
+    //{
+    //    if (promptText == null)
+    //    {
+    //        Debug.LogWarning("promptText UI 가 없습니다!");
+    //        return;
+    //    }
+
+    //    promptText.text = text;
+    //    promptText.gameObject.SetActive(true);
+    //}
+
+    private void SetPrompt(string text, bool visible)
     {
-        if (promptText == null)
+        EventBus.Publish(new InteractionPromptEvent
         {
-            Debug.LogWarning("promptText UI 가 없습니다!");
-            return;
-        }
-        
-        promptText.text = text;
-        promptText.gameObject.SetActive(true);
+            Text = text,
+            Visible = visible
+        });
     }
 
     private void ClearInteraction()
     {
-        if (curOutliner != null)
-        {
-            curOutliner.SetHighlight(false);
-            curOutliner = null;
-        }
-        curInteractObject = null;
-        curInteractable = null;
+        //if (curOutliner != null)
+        //{
+        //    curOutliner.SetHighlight(false);
+        //    curOutliner = null;
+        //}
+        //curInteractObject = null;
+        //curInteractable = null;
 
-        promptText.text = "";
-        promptText.gameObject.SetActive(false);
+        //promptText.text = "";
+        //promptText.gameObject.SetActive(false);
+        SetPrompt("", false);
     }
 
     public void Interact()
