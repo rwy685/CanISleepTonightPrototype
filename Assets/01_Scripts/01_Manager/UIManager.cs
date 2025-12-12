@@ -24,6 +24,10 @@ public class UIManager : MonoBehaviour
     [SerializeField] private UINoisePanel uiNoisePanel;
     [SerializeField] private UIEndingPanel uiEndingPanel;
 
+    [Header("Effect")]
+    [SerializeField] private UISleepVignette sleepVignette;
+    [SerializeField] private UIEyelidController eyelidController;
+
     public UIInventory UIInventory => uiInventory;
     public UIItemDetail UIItemDetail => uiItemDetail;
 
@@ -53,6 +57,22 @@ public class UIManager : MonoBehaviour
     private void OnFatigueChanged(FatigueChangedEvent e)
     {
         UpdateFatigueUI(e.Value, e.Max);
+    }
+
+    public void PlaySleepEffect()
+    {
+        sleepVignette.PlayVignette(1.5f);
+    }
+
+    //눈 감기/뜨기
+    public void PlaySleepEyelidEffect()
+    {
+        eyelidController.PlaySleepAnimation();
+    }
+
+    public void PlayWakeupEyelidEffect()
+    {
+        eyelidController.PlayWakeUpAnimation();
     }
     public void ToggleCursor()
     {

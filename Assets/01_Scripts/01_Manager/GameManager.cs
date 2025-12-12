@@ -63,7 +63,9 @@ public class GameManager : MonoBehaviour
 
     [Tooltip("소음 계수 (소음 1당 피로도 회복 감소)")]
     [SerializeField] private float noisePenaltyCoefficient = 0.2f;
-    
+
+    public BlinkVignetteController blinkController;
+
 
     private GamePhase _currentPhase = GamePhase.NotStarted;
     private int _currentDay = 0;
@@ -393,6 +395,12 @@ public class GameManager : MonoBehaviour
 
         // 수면 시작
         _isSleeping = true;
+
+        //수면 연출 시작
+        //UIManager.Instance.PlaySleepEffect();
+        //UIManager.Instance.PlaySleepEyelidEffect();
+        blinkController.PlaySleepAnimation();
+
         _sleepStartTime = actionPhaseDuration - _actionPhaseTimer;
         _noiseAtSleepStart = CalculateCurrentNoise();
 
@@ -419,7 +427,7 @@ public class GameManager : MonoBehaviour
 
 
     // 수면 후, 즉시 정산페이즈로
-    private IEnumerator TransitionToSettlementAfterSleep()
+    public IEnumerator TransitionToSettlementAfterSleep()
     {
         // 수면 연출 대기 (페이드 아웃 등)
         yield return new WaitForSeconds(1f);
@@ -451,6 +459,8 @@ public class GameManager : MonoBehaviour
         {
             playerCondition.AddFatigue(-fatigueRecovery);
         }
+
+ 
 
         // TODO: 정산 UI 표시
 
@@ -562,6 +572,10 @@ public class GameManager : MonoBehaviour
     private IEnumerator AutoTransitionAfterDelay(float delay, GamePhase nextPhase)
     {
         yield return new WaitForSeconds(delay);
+        if (nextPhase == GamePhase.GoToWork)
+        {
+            blinkController.PlayWakeUpAnimation();
+        }
         EnterPhase(nextPhase);
     }
 
